@@ -1,0 +1,20 @@
+# Task3/servicemonitor.yaml
+apiVersion: monitoring.coreos.com
+kind: ServiceMonitor
+metadata:
+  name: scaletestapp-servicemonitor
+  namespace: monitoring # ServiceMonitor должен находиться в том же NS, что и Prometheus
+  labels:
+    # Эти метки помогают Prometheus Operator найти этот ServiceMonitor. 
+    # При установке через Helm 'release: prometheus' обычно обязателен.
+    release: prometheus 
+spec:
+  selector:
+    matchLabels:
+      app: scaletestapp # Цель: выбор подов с меткой app=scaletestapp
+  endpoints:
+  - port: http # Имя порта, которое должно совпадать с именем порта в вашем Service (по умолчанию http)
+    path: /metrics # Путь к метрикам приложения
+  namespaceSelector:
+    matchNames:
+    - default # Наш сервис находится в пространстве имен default
