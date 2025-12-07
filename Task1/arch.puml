@@ -1,0 +1,45 @@
+@startuml
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Container Diagram (C2) for NovaMarket MVP
+' skinparam linetype ortho
+
+' actors
+Person(Customer, "Покупатель")
+Person(Seller, "Продавец")
+
+' external systems
+System_Ext(PaymentGateway, "Внешний Платежный Шлюз", "Прием и обработка платежей")
+System_Ext(DeliveryProvider, "Служба Доставки", "Логистический провайдер")
+
+' systems
+Container(Warehause,"Сервис складов","Учет товара на складах")
+Container(SellerApp,"Веб интерфейс продавца","React")
+
+System(API_Gataway,"API-шлюз","Маршрутизация")
+
+Container(IdentityService,"Сервис идентификации","","Аутентификация,авторизация")
+Container(Broker,"Брокер сообщений","Apache Kafka")
+
+'customer
+Container(Mobile_app,"Mobile app","Cotlin","мобильное приложение")
+Container(Catalog,"Каталог","Просмотр товаров покупателем")
+Container(Cart,"Корзина","Оформление заказов")
+
+' relations customer
+Rel(Customer, Mobile_app, "использует")
+Rel(Mobile_app, API_Gataway,"REST","Отправляет запросы")
+Rel( API_Gataway,IdentityService,"REST","Запросы")
+Rel( SellerApp,IdentityService,"REST","Запросы")
+Rel( API_Gataway,Catalog,"REST","Просмотр каталога")
+Rel( API_Gataway,Cart,"REST","Оформление заказов")
+Rel( Catalog,Broker,"Потребляет","Kafka")
+Rel( Cart,Broker,"Публикует, читает","Kafka")
+Rel( Warehause,Broker,"Публикует,читает","Kafka")
+Rel( PaymentGateway,Broker,"Публикует, читает","Kafka")
+Rel( DeliveryProvider,Broker,"Публикует, читает","Kafka")
+Rel( Seller,SellerApp,"Использует","Rest")
+Rel( SellerApp,Warehause,"CRUD запросы","Rest")
+
+@enduml

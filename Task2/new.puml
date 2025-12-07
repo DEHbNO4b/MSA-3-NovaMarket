@@ -1,0 +1,55 @@
+@startuml
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Container Diagram (C2) for NovaMarket MVP (Updated for Order History)
+' skinparam linetype ortho
+
+' actors
+Person(Customer, "Покупатель")
+Person(Seller, "Продавец")
+
+' external systems
+System_Ext(PaymentGateway, "Внешний Платежный Шлюз", "Прием и обработка платежей")
+System_Ext(DeliveryProvider, "Служба Доставки", "Логистический провайдер")
+
+' systems
+Container(Warehause,"Сервис складов","Учет товара на складах")
+Container(SellerApp,"Веб интерфейс продавца","React")
+
+System(API_Gataway,"API-шлюз","Маршрутизация")
+
+Container(IdentityService,"Сервис идентификации","","Аутентификация,авторизация")
+Container(Broker,"Брокер сообщений","Apache Kafka")
+
+'customer
+Container(Mobile_app,"Mobile app","Cotlin","мобильное приложение")
+Container(Catalog,"Каталог","Просмотр товаров покупателем")
+Container(Cart,"Сервис Корзины/Заказов (Checkout/Order Service)","Обработка оформления заказов, фиксация статусов")
+Container(OrderHistory, "Сервис Истории Заказов (Query DB)", "Оптимизирован для чтения, хранит денормализованные данные заказов (использует CQRS)")
+
+' relations customer
+Rel(Customer, Mobile_app, "использует")
+Rel(Mobile_app, API_Gataway,"REST","Отправляет запросы")
+Rel(API_Gataway, IdentityService,"REST","Запросы")
+Rel(SellerApp, IdentityService,"REST","Запросы")
+
+' API Gateway Routing
+Rel(API_Gataway, Catalog,"REST","Просмотр каталога")
+Rel(API_Gataway, Cart,"REST (Commands)","Оформление заказов")
+Rel(API_Gataway, OrderHistory, "REST (Queries)", "Запрос истории покупок")
+
+' Event Flow (Kafka)
+Rel(Cart, Broker,"Публикует события: OrderPlaced","Kafka")
+Rel(Warehause, Broker,"Публикует: ItemsReserved","Kafka")
+Rel(PaymentGateway, Broker,"Публикует: PaymentSucceded","Kafka")
+Rel(DeliveryProvider, Broker,"Публикует: Delivered","Kafka")
+
+' New: OrderHistory subscribes to everything to build its read model
+Rel(OrderHistory, Broker, "Потребляет все события (OrderPlaced, PaymentSucceded, Delivered и др.) для построения модели чтения", "Kafka")
+
+' Seller flow
+Rel(Seller, SellerApp,"Использует","Rest")
+Rel(SellerApp, Warehause,"CRUD запросы","Rest")
+
+@enduml

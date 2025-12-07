@@ -1,0 +1,80 @@
+@startuml
+title Code Diagram (C4) for NovaMarket MVP
+
+top to bottom direction
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+
+class Customer {
+    +String id
+    +String email
+    +String phone
+    +void login()
+}
+
+class Product {
+    +String id
+    +String name
+    +String description
+    +String price
+    +String availability
+    +String category
+    +String rating
+}
+
+class Catalog{
+    +Array<Product> products
+    +boolean addProductToCart()
+}
+
+class Cart {
+    +String cartId
+    +string CustomerId
+    +Order makeOrder()
+    +String paymentMethod
+    +boolean checkOrder()
+    +boolean confirmOrder()
+    +boolean makePayment()
+}
+
+
+class Order{
+    +String orderId
+    +Array<Product> products
+    +OrderStatus  status
+    +String totalPrice
+    +Delivery delivery
+    +void addProduct()
+    +void removeProduct()
+    +void makeDelivery()
+}
+
+class Delivery{
+    +String deliveryAdress
+    +DeliveryMethod deliveryMethod
+    +Date arrival
+}
+
+enum DeliveryMethod{
+    COURIER
+    SELF_PICKUP
+    PICKUP_POINT
+}
+
+enum OrderStatus {
+    WAITING_FOR_PAYMENT
+    PAID_AND_PREPARING_FOR_SHIPMENT
+    TRANSFERRED_FOR_DELIVERY
+    DELIVERED
+}
+
+Customer "1" --> "1" Cart : "использует"
+Customer "1" --> "1" Catalog : "использует"
+Cart "1" --> "0..*" Order : "содержит"
+Order "1" --> "1" Delivery : "содержит"
+Order "1" --> "0..*" Product : "содержит"
+
+Order --> OrderStatus : "использует тип"
+Delivery --> DeliveryMethod : "использует тип"
+
+@enduml
